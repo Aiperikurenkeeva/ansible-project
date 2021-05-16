@@ -1,0 +1,19 @@
+---
+  - name: install php-fpm packages 
+    apt: #for ubuntu
+      state: present
+      name: #this php packges requred for regular configurations #this packages requires for a website 
+        - php7.2
+        - php7.2-cli 
+        - php7.2-fpm 
+        - php7.2-mysql
+        - php7.2-json 
+        - php7.2-opcache
+        - php7.2-mbstring
+        - php7.2-xml 
+        - php7.2-gd
+        - php7.2-curl  #must have 
+        #those a default packages #developer who is working on a website, can request additional packages 
+        #also can search php packages required for a wordpress; 
+        #json format
+        #xml format

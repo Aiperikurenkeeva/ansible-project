@@ -1,0 +1,50 @@
+---
+
+
+- name: download wordpress 
+  get_url: url=http://wordpress.org/wordpress-{{ wp_version }}.tar.gz dest=/var/www/html/wordpress/public_html/wordpress-{{ wp_version }}.tar.gz mode=0755
+  #installing wordpress 
+  #will download from this link to the destination public_html 
+  #mode0755=permission 
+  #on wp_version variable to specify what version customer wants
+
+- name: extract wordpress #extract menas unzip, unarchive 
+  unarchive: #module 
+    src: /var/www/html/wordpress/public_html/wordpress-{{ wp_version }}.tar.gz #source
+    dest: /var/www/html/wordpress/public_html/ #unarchive to this destination folder 
+    remote_src: yes #should specify, this if getting url othervise it will look on your laptop 
+
+- name: copy all file #copying file from public_html/wordpress to html/wordpress
+  copy: #module
+    src: /var/www/html/wordpress/public_html/wordpress/ #it will look on your laptop
+    dest: /var/www/html/wordpress/public_html/ #destination 
+    remote_src: yes
+
+- name: Recursively change ownership #changing ownership recursively
+  file: #module
+    path: /var/www/html/wordpress/public_html #specify path where 
+    state: directory #make sure it won't change 
+    recurse: yes
+    owner: www-data
+    group: www-data
+    mode: u+rwx,g+rx,o+rx #for user give read write execute #for group read, execute, for others read, execute 
+
+- name: Fetch salts for wordpress config #for wordpress you have to download a key, look for wordpress api
+  command: curl http://api.wordpress.org/secret-key/1.1/salt/ #it contains a key and now assing to variable
+  args: #it will give warnings 
+    warn: false 
+  register: "wp_salt" #register means create this variable and assing the value of this output command 
+
+- name: copy wordpress config
+  template: 
+    src: wp-config.php.j2
+    dest: /var/www/html/wordpress/public_html/ #copy to this location where your wordpress located 
+    mode: 0755 #give permission
+    owner: www-data 
+    group: www-data
+
+- name: start php-fpm service
+  service:
+    name: php7.2-fpm
+    state: started 
+    enabled: yes 

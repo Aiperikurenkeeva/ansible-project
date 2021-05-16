@@ -1,0 +1,34 @@
+---
+
+- name: install nginx
+  apt: 
+    name: nginx
+    state: present
+
+- name: create directory #create a directory for a wordpress
+  file: #module file
+    path: /var/www/html/wordpress/public_html #create wordpress in which, directory public_html, you are going to manage
+    state: directory #specify it's a directory
+    mode: '0755' #specify permission for your directory should be executible by many people
+
+- name: copy nginx config for wordpress #configure nginx for wordpress
+  template: src=default.conf dest=/etc/nginx/sites-available/wordpress.conf mode=0755 #use template nginx 
+  #first name it src=default.conf and wordpress.conf you choose
+  # give a permission readable for other service 
+  notify: restart -nginx #notify means it will call/look other handlers folder, one more same task 
+  #we need handlers to do multiple tasks/times 
+
+- name: create symlink #create a symbolic link, it's a same module file 
+  file: 
+    src: /etc/nginx/sites-available/wordpress.conf #sites-available keeps the original file, we don't touch this, it should always be here not configured
+    dest: /etc/nginx/sites-enabled/wordpress.conf  #it will create in sites-enabled has only links from the original source
+  #more secure and your site won't notice the change 
+    state: link
+  notify: restart-nginx #notify command will call the handlers for a restart-nginx service 
+
+- name: rm default symlink
+  file: 
+    path: /etc/nginx/sites-enabled/default #remove the default nginx configurations
+    state: absent #command which will delete the default nginx 
+    #after we created default.configuration file on default.conf 
+    #created 2 varuables on webserver1 file  1)#port 80 for ngnix 2)#DNS name 

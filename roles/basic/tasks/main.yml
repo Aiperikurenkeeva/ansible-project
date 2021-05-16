@@ -1,0 +1,67 @@
+---
+
+
+- name: test command 
+  shell: cat /etc/os-release
+- name: set hostname
+  hostname: name="{{ hostname }}"
+
+- name: configure /etc/hosts file
+  template: 
+    src: hosts.j2 #this is the source from where it will copy 
+    dest: /etc/hosts #post this file to the new destination hosts file, will overwrite existing configuration
+
+- name: add multiverse repo
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }} multiverse' state=present mode=0644 #repository url
+
+- name: add updates repo
+  apt_repository: repo='deb http://us.archive.ubuntu.com/ubuntu/ {{ ubuntu }}-updates multiverse' state=present
+
+- name: apt update
+  apt: update_cache=yes #will update everything within the packages
+
+- name: apt upgrade 
+  apt: upgrade=yes
+
+- name: install base packages 
+  apt:
+    state: present
+    name: 
+      - git
+      - python3-pip
+      - bc
+      - unzip
+      - clamav
+      - nfs-common 
+  tags: packages 
+
+- name: create users
+  user:
+    state: present #this user should exist
+    groups: sudo, adm # adding users to a sudo and adm group
+    shell: /bin/bash #bin/bash/shell
+    comment: sudo, adm
+    name: "{{ item }}"
+  with_items:
+   - aiperi
+  tags:
+   - users
+
+- name: add auth key to users
+  authorized_key:
+   state: present
+   key: "{{ lookup('file', 'authorized_keys_' + item ) }}" #lookup in file (file)
+   user: "{{ item }}"
+  with_items:
+    - aiperi
+  tags: users 
+
+- name: add sudo group with no password 
+  lineinfile:
+   dest: /etc/sudoers
+   line: '%sudo ALL=(ALL) NOPASSWD:ALL' #if user is from sudo group don't ask him for a password
+   #become a root user, execute commands without a password
+   #only for certain users who is allowed to manage the servers
+   #You DevOps engineer and giving your DevOps coworkers permissions
+   #everyone shoould be using their own user to log in to the server, security reasons-can find out who broke something
+  tags: users

@@ -1,0 +1,8 @@
+[admin]
+server
+
+[webservers]
+webserver1
+
+[server]
+zabbix-server

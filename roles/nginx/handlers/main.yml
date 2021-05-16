@@ -1,0 +1,10 @@
+---
+
+- name: restart-nginx 
+  service: 
+    name: nginx
+    state: restarted 
+    enabled: yes 
+    #this file for notify command which is on tasks folder and manin.yml file
+    #notify command will look for restart-nginx service
+    #we need handlers when you need to restart nginx several times 

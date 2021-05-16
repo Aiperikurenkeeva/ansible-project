@@ -1,0 +1,11 @@
+---
+
+
+- name: Restart-Services
+  service: 
+    state: restarted 
+    name: "{{ item }}"
+    enabled: yes
+    with_items:
+      - apache2
+      - zabbix_server
